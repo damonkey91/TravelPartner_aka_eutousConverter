@@ -46,7 +46,7 @@
                             
                             <StackLayout BackgroundColor="Transparent" Grid.Column="0" Grid.ColumnSpan="2">
                                 <StackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={x:Reference this}, Path=BindingContext.TappCommand}"/>
+                                    <TapGestureRecognizer Command="{Binding Source={x:Reference this}, Path=BindingContext.TappCommand}" CommandParameter="{Binding}"/>
                                 </StackLayout.GestureRecognizers>
                             </StackLayout>
                         </Grid>

@@ -10,7 +10,7 @@ using TravelPartner.ViewModel.Commands;
 
 namespace TravelPartner.ViewModel
 {
-    class CurrencyConverterViewModel : INotifyPropertyChanged, ITappedCallback
+    public class CurrencyConverterViewModel : INotifyPropertyChanged, ITappedCallback
     {
         private ObservableCollection<Currency> choosenCurrencies;
         
@@ -25,6 +25,14 @@ namespace TravelPartner.ViewModel
         public TappCommand TappCommand { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
 
+        private Currency clickedCurrency;
+
+        public Currency ClickedCurrency
+        {
+            get { return clickedCurrency; }
+            private set { clickedCurrency = value; }
+        }
+
         public CurrencyConverterViewModel()
         {
             TappCommand = new TappCommand(this);
@@ -38,8 +46,20 @@ namespace TravelPartner.ViewModel
         {
             List<Currency> currencies = await App.Database.ReadChoosen();
             ChoosenCurrencies = currencies != null ? new ObservableCollection<Currency>(currencies) : new ObservableCollection<Currency>();
-            if (currencies.Count == 0)
-                ChoosenCurrencies = new ObservableCollection<Currency>(await App.Database.Read(1, 11));            
+            FirstUsage();                            
+        }
+
+        private async void FirstUsage()
+        {
+            if (ChoosenCurrencies.Count == 0)
+            {
+                ChoosenCurrencies = new ObservableCollection<Currency>(await App.Database.Read(1, 11));
+                for (int i = 0; i < ChoosenCurrencies.Count; i++)
+                {
+                    ChoosenCurrencies[i].Order = i;
+                }
+                App.Database.UpdateAll(ChoosenCurrencies);
+            }
         }
 
         private void OnPropertChanged(string propertyName)
@@ -47,9 +67,16 @@ namespace TravelPartner.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public void Tapped()
+        public void Tapped(Currency clickedCurrency)
         {
-            PopupNavigation.Instance.PushAsync(new MyPopupPage());
+            ClickedCurrency = clickedCurrency;
+            PopupNavigation.Instance.PushAsync(new MyPopupPage(this));
+        }
+
+        public void ReplaceCurrencyItem(Currency newCurrency)
+        {
+            ChoosenCurrencies.RemoveAt(newCurrency.Order);
+            ChoosenCurrencies.Insert(newCurrency.Order, newCurrency);
         }
     }
 }

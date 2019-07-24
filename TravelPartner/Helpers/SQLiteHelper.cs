@@ -34,7 +34,7 @@ namespace TravelPartner.Helpers
             return rows > 0;
         }
 
-        public void UpdateAll(ObservableCollection<Currency> currencies)
+        public void UpdateAll(ICollection<Currency> currencies)
         {
             database.UpdateAllAsync(currencies);
         }

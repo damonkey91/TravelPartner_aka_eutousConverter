@@ -14,9 +14,9 @@ namespace TravelPartner
     public partial class MyPopupPage : PopupPage
     {
         private PopupViewModel viewModel;
-        public MyPopupPage()
+        public MyPopupPage(CurrencyConverterViewModel currencyViewModel)
         {
-            viewModel = new PopupViewModel();
+            viewModel = new PopupViewModel(currencyViewModel);
             InitializeComponent();
             BindingContext = viewModel;
         }

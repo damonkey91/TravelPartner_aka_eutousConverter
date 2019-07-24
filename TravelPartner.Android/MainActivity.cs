@@ -6,6 +6,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Android.OS;
+using Rg.Plugins.Popup.Services;
 
 namespace TravelPartner.Droid
 {
@@ -30,18 +31,15 @@ namespace TravelPartner.Droid
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
         public override void OnBackPressed()
-        {
-            /*
+        {          
             if (Rg.Plugins.Popup.Popup.SendBackPressed(base.OnBackPressed))
             {
-                // Do something if there are some pages in the `PopupStack`
+                PopupNavigation.Instance.PopAsync();
             }
             else
             {
                 base.OnBackPressed();
             }
-            */
-            base.OnBackPressed();
         }
     }
 }

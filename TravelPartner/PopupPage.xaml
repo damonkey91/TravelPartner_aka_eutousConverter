@@ -8,10 +8,12 @@
              mc:Ignorable="d"
              x:Class="TravelPartner.MyPopupPage"
              xmlns:converters="clr-namespace:TravelPartner.ViewModel.Converters"
+             xmlns:eventToCommand="clr-namespace:TravelPartner.ViewModel.EventToCommandBehavior"
              >
     <pages:PopupPage.Resources>
         <ResourceDictionary>
             <converters:ToLowerCaseConverter x:Key="ToLowerCase"/>
+            <converters:SelectedItemEventArgsToSelectedItemConverter x:Key="SelectedItemConverter"/>
         </ResourceDictionary>
     </pages:PopupPage.Resources>
     <Frame BackgroundColor="White" Margin="20,10" Padding="5" CornerRadius="5" >
@@ -19,6 +21,11 @@
             <Label Text="Välj valuta!" HorizontalOptions="Center" TextColor="Black"/>
             <SearchBar Text="{Binding SearchText, Mode=TwoWay}" Placeholder="Search"/>
             <ListView ItemsSource="{Binding Currencies}" RowHeight="60" SelectionMode="None">
+                <ListView.Behaviors>
+                    <eventToCommand:EventToCommandBehavior EventName="ItemTapped" 
+                                                           Command="{Binding TappCommand}" 
+                                                           Converter="{StaticResource SelectedItemConverter}" />
+                </ListView.Behaviors>
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>

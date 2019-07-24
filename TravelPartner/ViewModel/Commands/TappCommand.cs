@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
+using TravelPartner.Model;
 
 namespace TravelPartner.ViewModel.Commands
 {
@@ -23,12 +24,13 @@ namespace TravelPartner.ViewModel.Commands
 
         public void Execute(object parameter)
         {
-            tappedCallback.Tapped();
+            Currency currency = parameter as Currency;
+            tappedCallback.Tapped(currency);
         }
     }
 
     public interface ITappedCallback
     {
-        void Tapped();
+        void Tapped(Currency clickedCurrency);
     }
 }
