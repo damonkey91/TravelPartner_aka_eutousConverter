@@ -7,7 +7,7 @@
              x:Class="TravelPartner.UnitConverterPage">
     <ContentPage.Content>
         <StackLayout>
-            <Button Text="Convert json" Clicked="Button_Clicked"
+            <Button Text="Convert json" Command="{Binding TappCommand}"
                 VerticalOptions="CenterAndExpand" 
                 HorizontalOptions="CenterAndExpand" />
         </StackLayout>

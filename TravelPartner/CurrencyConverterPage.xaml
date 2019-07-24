@@ -4,13 +4,20 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="TravelPartner.CurrencyConverterPage">
+             x:Class="TravelPartner.CurrencyConverterPage"
+             xmlns:converters="clr-namespace:TravelPartner.ViewModel.Converters"
+             x:Name="this">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:ToLowerCaseConverter x:Key="ToLowerCase"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ContentPage.Content>
-        <ListView ItemsSource="{Binding Currencies}">
+        <ListView ItemsSource="{Binding ChoosenCurrencies}" RowHeight="60" SelectionMode="None">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
-                        <Grid Margin="0,0,0,0" VerticalOptions="FillAndExpand">
+                        <Grid Margin="0,0,0,0" VerticalOptions="FillAndExpand" ColumnSpacing="0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
@@ -18,17 +25,29 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
+                            <Image Source="{Binding ShortName, Converter={StaticResource ToLowerCase}}" 
+                                    VerticalOptions="Center"
+                                    Aspect="Fill"
+                                    Margin="5,10"
+                                    Grid.Row="0" Grid.Column="0"/>
                             
-                            <StackLayout BackgroundColor="Orange" Grid.Row="0" Grid.Column="0" >
+                            <Label Text="{Binding ShortName}" Grid.Column="1" 
+                                   VerticalTextAlignment="Center" 
+                                   FontSize="Large" 
+                                   FontAttributes="Bold"
+                                   TextColor="Black"/>
+
+                            <Entry HorizontalTextAlignment="End" 
+                                    VerticalOptions="Center"
+                                    Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3"/>
+                            
+                            <StackLayout BackgroundColor="Transparent" Grid.Column="0" Grid.ColumnSpan="2">
                                 <StackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer />
+                                    <TapGestureRecognizer Command="{Binding Source={x:Reference this}, Path=BindingContext.TappCommand}"/>
                                 </StackLayout.GestureRecognizers>
-                                <Image Source=""/>
-                                <Label Text="{Binding ShortName}"/>
-                            </StackLayout>
-                            <StackLayout BackgroundColor="Gray" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2">
-                                <Entry/>
                             </StackLayout>
                         </Grid>
                     </ViewCell>

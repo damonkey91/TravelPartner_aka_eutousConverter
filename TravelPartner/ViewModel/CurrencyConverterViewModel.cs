@@ -1,26 +1,19 @@
-﻿using System;
+﻿using Rg.Plugins.Popup.Services;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Text;
 using TravelPartner.Helpers;
 using TravelPartner.Model;
+using TravelPartner.ViewModel.Commands;
 
 namespace TravelPartner.ViewModel
 {
-    class CurrencyConverterViewModel : INotifyPropertyChanged
+    class CurrencyConverterViewModel : INotifyPropertyChanged, ITappedCallback
     {
-        private ObservableCollection<Currency> currencies;
         private ObservableCollection<Currency> choosenCurrencies;
-
-        public ObservableCollection<Currency> Currencies
-        {
-            get => currencies; set
-            {
-                currencies = value;
-                OnPropertChanged("Currencies");
-            }
-        }
+        
         public ObservableCollection<Currency> ChoosenCurrencies
         {
             get => choosenCurrencies; set
@@ -29,34 +22,34 @@ namespace TravelPartner.ViewModel
                 OnPropertChanged("ChoosenCurrencies");
             }
         }
+        public TappCommand TappCommand { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
 
         public CurrencyConverterViewModel()
         {
+            TappCommand = new TappCommand(this);
             PopulateObservableCollections();
 
-            //check if sql table is empty or >168
-            //if true insert constant countries into sql database
+            
             //if false update currency values if timestamp is more then 24 hours.
         }
 
-
-        //Todo: Sql table with all currencies
-        //Sql table with your choosen currencies
-
         private async void PopulateObservableCollections()
         {
-            List<Currency> allCurrencies = await App.Database.ReadAll();
             List<Currency> currencies = await App.Database.ReadChoosen();
-            if (allCurrencies == null || allCurrencies.Count < 168)
-                App.Database.InsertAll(Constants.GetCountries());
-            Currencies = allCurrencies != null ? new ObservableCollection<Currency>(allCurrencies) : new ObservableCollection<Currency>();
             ChoosenCurrencies = currencies != null ? new ObservableCollection<Currency>(currencies) : new ObservableCollection<Currency>();
+            if (currencies.Count == 0)
+                ChoosenCurrencies = new ObservableCollection<Currency>(await App.Database.Read(1, 11));            
         }
 
         private void OnPropertChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public void Tapped()
+        {
+            PopupNavigation.Instance.PushAsync(new MyPopupPage());
         }
     }
 }
