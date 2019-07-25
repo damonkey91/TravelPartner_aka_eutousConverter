@@ -2,13 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace TravelPartner.Model
 {
     public class Currency
     {
         public const int NO_VALUE = -1;
-        public const int NOT_CHOOSEN = -1;
         private string name;
 
         [PrimaryKey, AutoIncrement]
@@ -22,11 +22,20 @@ namespace TravelPartner.Model
         }
         public string ShortName { get; set; }
         public double Value { get; set; }
-        public int Order { get; set; }
-
+        public int Position { get; set; }
         public Currency()
         {
 
+        }
+
+        public static async Task<List<Currency>> GetAllCurrencies()
+        {
+            return await App.Database.ReadAll<Currency>();
+        }
+
+        public static async Task<List<Currency>> GetCurrenciesContaining(string text)
+        {
+            return await App.Database.SearchFor(text);
         }
     }
 }

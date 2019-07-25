@@ -11,10 +11,9 @@ using Xamarin.Forms;
 
 namespace TravelPartner.ViewModel
 {
-    class PopupViewModel : INotifyPropertyChanged, ITappedCallback
+    class PopupViewModel : INotifyPropertyChanged, ITappedCallback, ISearchBarCallback
     {
         private ObservableCollection<Currency> currencies;
-        private string searchText;
         private CurrencyConverterViewModel currencyViewModel;
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -27,27 +26,21 @@ namespace TravelPartner.ViewModel
             }
         }
 
-        public string SearchText
-        {
-            get => searchText; set
-            {
-                searchText = value;
-                OnPropertChanged("SearchText");
-            }
-        }
+        public SearchCommand SearchBarCommand { get; set; }
 
         public TappCommand TappCommand { get; set; }
 
         public PopupViewModel(CurrencyConverterViewModel currencyViewModel)
         {
             PopulateObservableCollections();
+            SearchBarCommand = new SearchCommand(this);
             TappCommand = new TappCommand(this);
             this.currencyViewModel = currencyViewModel;
         }
 
         private async void PopulateObservableCollections()
         {
-            List<Currency> allCurrencies = await App.Database.ReadAll();
+            List<Currency> allCurrencies = await Currency.GetAllCurrencies();
             Currencies = allCurrencies != null ? new ObservableCollection<Currency>(allCurrencies) : new ObservableCollection<Currency>();
             
         }
@@ -60,17 +53,27 @@ namespace TravelPartner.ViewModel
         public void Tapped(Currency clickedCurrency)
         {
             Currency oldCurrency = currencyViewModel.ClickedCurrency;
-            List<Currency> list = ChangeOrder(oldCurrency, clickedCurrency);
-            currencyViewModel.ReplaceCurrencyItem(list[1]);
-            App.Database.UpdateAll(list);
+            List<Currency> list = SetPosition(oldCurrency, clickedCurrency);
+            currencyViewModel.ReplaceCurrencyItem(list[0]);
+            ChoosenCurrenciesTable.Update(list);
             PopupNavigation.Instance.PopAsync();
         }
 
-        private List<Currency> ChangeOrder(Currency oldCurrency, Currency newCurrency )
+        public async void Search(string input)
         {
-            newCurrency.Order = oldCurrency.Order;
-            oldCurrency.Order = Currency.NOT_CHOOSEN;
-            return new List<Currency>() { oldCurrency, newCurrency };
+            List<Currency> searchResult;
+            if (!string.IsNullOrEmpty(input))
+                searchResult = await Currency.GetCurrenciesContaining(input);
+            else
+                searchResult = await Currency.GetAllCurrencies();
+            Currencies = new ObservableCollection<Currency>(searchResult);
         }
+
+        private List<Currency> SetPosition(Currency oldCurrency, Currency newCurrency )
+        {
+            newCurrency.Position = oldCurrency.Position;
+            return new List<Currency>() { newCurrency };
+        }
+
     }
 }

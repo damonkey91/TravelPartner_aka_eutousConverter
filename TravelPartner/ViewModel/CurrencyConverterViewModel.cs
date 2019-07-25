@@ -44,23 +44,11 @@ namespace TravelPartner.ViewModel
 
         private async void PopulateObservableCollections()
         {
-            List<Currency> currencies = await App.Database.ReadChoosen();
+            List<Currency> currencies = await ChoosenCurrenciesTable.GetChoosenCurrencies(10);
             ChoosenCurrencies = currencies != null ? new ObservableCollection<Currency>(currencies) : new ObservableCollection<Currency>();
-            FirstUsage();                            
         }
 
-        private async void FirstUsage()
-        {
-            if (ChoosenCurrencies.Count == 0)
-            {
-                ChoosenCurrencies = new ObservableCollection<Currency>(await App.Database.Read(1, 11));
-                for (int i = 0; i < ChoosenCurrencies.Count; i++)
-                {
-                    ChoosenCurrencies[i].Order = i;
-                }
-                App.Database.UpdateAll(ChoosenCurrencies);
-            }
-        }
+        
 
         private void OnPropertChanged(string propertyName)
         {
@@ -75,8 +63,8 @@ namespace TravelPartner.ViewModel
 
         public void ReplaceCurrencyItem(Currency newCurrency)
         {
-            ChoosenCurrencies.RemoveAt(newCurrency.Order);
-            ChoosenCurrencies.Insert(newCurrency.Order, newCurrency);
+            ChoosenCurrencies.RemoveAt(newCurrency.Position);
+            ChoosenCurrencies.Insert(newCurrency.Position, newCurrency);
         }
     }
 }

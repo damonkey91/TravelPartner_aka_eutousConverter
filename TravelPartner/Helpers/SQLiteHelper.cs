@@ -15,51 +15,78 @@ namespace TravelPartner.Helpers
         public SQLiteHelper(string dbPath)
         {
             database = new SQLiteAsyncConnection(dbPath);
-            database.CreateTableAsync<Currency>().Wait();
-            SetupTableForFirstTime();
+            
+            SetupTablesForFirstTime();
         }
 
-        private async void SetupTableForFirstTime()
+        private async void SetupTablesForFirstTime()
         {
-            int amount = await database.Table<Currency>().CountAsync();
-            if (amount < 168)
-            {
+            CreateTable<Currency>();
+            CreateTable<ChoosenCurrenciesTable>();
+            int currencycount = await TableCount<Currency>();
+            int choosenCurrencyCount = await TableCount<ChoosenCurrenciesTable>();
+            if (currencycount < 168)
                 await InsertAll(Constants.GetCountries());
-            }
+
+            if (choosenCurrencyCount < 10)
+                await InsertAll<ChoosenCurrenciesTable>(Constants.ChoosenCurrencies);
+        }
+        
+        public void CreateTable<T>()
+            where T : new()
+        {
+            database.CreateTableAsync<T>().Wait();
         }
 
-        public async Task<bool> InsertAll(List<Currency> currencies)
+        public async Task<bool> InsertAll<T>(List<T> inputList)
         {
-            int rows = await database.InsertAllAsync(currencies);
+            int rows = await database.InsertAllAsync(inputList);
             return rows > 0;
         }
 
-        public void UpdateAll(ICollection<Currency> currencies)
+        public void UpdateAll<T>(ICollection<T> inputList)
         {
-            database.UpdateAllAsync(currencies);
+            database.UpdateAllAsync(inputList);
         }
 
-        public void Delete(Currency currency)
+        public void Delete<T>(T deleteObject)
         {
-            database.DeleteAsync(currency.Id);
+            database.DeleteAsync(deleteObject);
         }
 
-        public async Task<List<Currency>> ReadAll()
+        public async Task<List<T>> ReadAll<T>()
+            where T : new()
         {
-            List<Currency> currencies = await database.Table<Currency>().ToListAsync();
-            return currencies;
-        }
-
-        public async Task<List<Currency>> ReadChoosen()
-        {
-            List<Currency> currencies = await database.Table<Currency>().Where(c => c.Order != Currency.NOT_CHOOSEN).OrderBy(c => c.Order).ToListAsync();
-            return currencies;
-        }
-
-        public async Task<List<Currency>> Read(int from, int to)
-        {
-            List<Currency> list = await database.Table<Currency>().Where(c => c.Id >= from && c.Id < to).ToListAsync();
+            List<T> list = await database.Table<T>().ToListAsync();
             return list;
+        }
+
+        public async Task<List<Currency>> ReadChoosen(int length)
+        {
+            List<ChoosenCurrenciesTable> choosenCurrencies = await database.Table<ChoosenCurrenciesTable>().ToListAsync();
+            AsyncTableQuery<Currency> query = database.Table<Currency>();
+            List<Currency> currencies = new List<Currency>();
+            for (int i = 0; i < length; i++)
+            {
+                int index = choosenCurrencies[i].CurrencyId - 1;
+                currencies.Add(await query.ElementAtAsync(index));
+            } 
+            return currencies;
+        }
+
+        public async Task<int> TableCount<T>()
+            where T: new()
+        {
+            return await database.Table<T>().CountAsync();
+        }
+
+        public async Task<List<Currency>> SearchFor(string text)
+        {
+            string lowerText = text.ToLower();
+            return await database.Table<Currency>().Where(
+                c => c.Name.ToLower().Contains(lowerText) || 
+                c.ShortName.ToLower().Contains(lowerText)).
+                ToListAsync();
         }
     }
 }
