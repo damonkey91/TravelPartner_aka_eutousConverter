@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TravelPartner.Helpers;
+using TravelPartner.Model;
 using TravelPartner.ViewModel;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -16,12 +18,13 @@ namespace TravelPartner
         public UnitConverterPage()
         {
             InitializeComponent();
-            BindingContext = new CurrencyConverterViewModel();
         }
 
         private void Button_Clicked(object sender, EventArgs e)
         {
-            Constants.GetCountries();
+              
         }
+
+    
     }
 }

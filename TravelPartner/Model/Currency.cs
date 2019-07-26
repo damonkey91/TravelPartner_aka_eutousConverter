@@ -1,6 +1,7 @@
 ﻿using SQLite;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -36,6 +37,29 @@ namespace TravelPartner.Model
         public static async Task<List<Currency>> GetCurrenciesContaining(string text)
         {
             return await App.Database.SearchFor(text);
+        }
+
+        public static async void UpdateCurrencyValue(ExchangeRate exchangeRate)
+        {
+            List<Currency> currencies = await App.Database.ReadAll<Currency>();
+            currencies = await InsertRateIntoCurrencies(currencies, exchangeRate);
+            App.Database.UpdateAll<Currency>(currencies);
+        }
+
+        public static async Task<List<Currency>> InsertRateIntoCurrencies(ICollection<Currency> currencies, ExchangeRate exchangeRate)
+        {
+            return await Task<List<Currency>>.Run(() => 
+            {
+                Dictionary<string, double> rates = exchangeRate.rates;
+                foreach (var currency in currencies)
+                {
+                    string key = currency.ShortName;
+                    double rate = rates[key];
+                    currency.Value = rate;
+                }
+                return currencies.ToList();
+            });
+            
         }
     }
 }

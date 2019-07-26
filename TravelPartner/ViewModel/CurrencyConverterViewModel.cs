@@ -7,6 +7,7 @@ using System.Text;
 using TravelPartner.Helpers;
 using TravelPartner.Model;
 using TravelPartner.ViewModel.Commands;
+using Xamarin.Essentials;
 
 namespace TravelPartner.ViewModel
 {
@@ -37,9 +38,20 @@ namespace TravelPartner.ViewModel
         {
             TappCommand = new TappCommand(this);
             PopulateObservableCollections();
+            UpdateExchangeRate();            
+        }
 
-            
-            //if false update currency values if timestamp is more then 24 hours.
+        private async void UpdateExchangeRate()
+        {
+            if (CheckTimestamp()) {
+                ExchangeRate exchangeRate = await ExchangeRate.GetExchangeRates();
+                if (exchangeRate != null && exchangeRate.rates.Count != 0)
+                {
+                    Currency.UpdateCurrencyValue(exchangeRate);
+                    ChoosenCurrencies = new ObservableCollection<Currency>(await Currency.InsertRateIntoCurrencies(ChoosenCurrencies, exchangeRate));
+                    Preferences.Set(Constants.TIMESTAMP_KEY, DateTime.Now);                   
+                }
+            }
         }
 
         private async void PopulateObservableCollections()
@@ -48,7 +60,14 @@ namespace TravelPartner.ViewModel
             ChoosenCurrencies = currencies != null ? new ObservableCollection<Currency>(currencies) : new ObservableCollection<Currency>();
         }
 
-        
+        private bool CheckTimestamp()
+        {
+            var timeNow = DateTime.Now;
+            DateTime lastUpdate = Preferences.Get(Constants.TIMESTAMP_KEY, new DateTime(0));
+            TimeSpan delta = timeNow - lastUpdate;
+            bool isMoreThen = delta.TotalHours > 24;
+            return isMoreThen;
+        }
 
         private void OnPropertChanged(string propertyName)
         {
