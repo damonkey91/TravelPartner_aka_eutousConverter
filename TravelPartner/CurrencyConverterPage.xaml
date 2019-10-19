@@ -41,8 +41,11 @@
                                    TextColor="Black"/>
 
                             <Entry HorizontalTextAlignment="End" 
-                                    VerticalOptions="Center"
-                                    Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3"/>
+                                   VerticalOptions="Center"
+                                   Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="3"
+                                   Focused="Entry_Focused"
+                                   Keyboard="Numeric"
+                                   Text="{Binding EntryValue}"/>
                             
                             <StackLayout BackgroundColor="Transparent" Grid.Column="0" Grid.ColumnSpan="2">
                                 <StackLayout.GestureRecognizers>

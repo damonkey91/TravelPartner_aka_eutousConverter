@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TravelPartner.ViewModel
 {
-    class UnitConverterViewModel
+    class UnitConverterViewModel : ViewModelBase
     {
     }
 }

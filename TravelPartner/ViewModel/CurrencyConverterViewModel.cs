@@ -8,37 +8,28 @@ using TravelPartner.Helpers;
 using TravelPartner.Model;
 using TravelPartner.ViewModel.Commands;
 using Xamarin.Essentials;
+using Xamarin.Forms;
 
 namespace TravelPartner.ViewModel
 {
-    public class CurrencyConverterViewModel : INotifyPropertyChanged, ITappedCallback
+    public class CurrencyConverterViewModel : ViewModelBase, ITappedCallback
     {
-        private ObservableCollection<Currency> choosenCurrencies;
-        
-        public ObservableCollection<Currency> ChoosenCurrencies
+        private ObservableCollection<CurrencyListItemViewModel> choosenCurrencies;
+        public ObservableCollection<CurrencyListItemViewModel> ChoosenCurrencies
         {
-            get => choosenCurrencies; set
-            {
-                choosenCurrencies = value;
-                OnPropertChanged("ChoosenCurrencies");
-            }
+            get => choosenCurrencies;
+            set => SetProperty(ref choosenCurrencies, value);
         }
         public TappCommand TappCommand { get; set; }
-        public event PropertyChangedEventHandler PropertyChanged;
+        private Entry focusedEntry = null;
 
-        private Currency clickedCurrency;
-
-        public Currency ClickedCurrency
-        {
-            get { return clickedCurrency; }
-            private set { clickedCurrency = value; }
-        }
+        public Currency ClickedCurrency { get; private set; }
 
         public CurrencyConverterViewModel()
         {
             TappCommand = new TappCommand(this);
             PopulateObservableCollections();
-            UpdateExchangeRate();            
+            UpdateExchangeRate();
         }
 
         private async void UpdateExchangeRate()
@@ -48,7 +39,7 @@ namespace TravelPartner.ViewModel
                 if (exchangeRate != null && exchangeRate.rates.Count != 0)
                 {
                     Currency.UpdateCurrencyValue(exchangeRate);
-                    ChoosenCurrencies = new ObservableCollection<Currency>(await Currency.InsertRateIntoCurrencies(ChoosenCurrencies, exchangeRate));
+                    PopulateObservableCollections();
                     Preferences.Set(Constants.TIMESTAMP_KEY, DateTime.Now);                   
                 }
             }
@@ -56,8 +47,10 @@ namespace TravelPartner.ViewModel
 
         private async void PopulateObservableCollections()
         {
-            List<Currency> currencies = await ChoosenCurrenciesTable.GetChoosenCurrencies(10);
-            ChoosenCurrencies = currencies != null ? new ObservableCollection<Currency>(currencies) : new ObservableCollection<Currency>();
+            List<Currency> Currencies = await ChoosenCurrenciesTable.GetChoosenCurrencies(10);
+            List<CurrencyListItemViewModel> tempCurrenciesList = new List<CurrencyListItemViewModel>();
+            Currencies.ForEach(currency => tempCurrenciesList.Add(new CurrencyListItemViewModel(currency)));
+            ChoosenCurrencies = new ObservableCollection<CurrencyListItemViewModel>(tempCurrenciesList);
         }
 
         private bool CheckTimestamp()
@@ -69,11 +62,6 @@ namespace TravelPartner.ViewModel
             return isMoreThen;
         }
 
-        private void OnPropertChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
         public void Tapped(Currency clickedCurrency)
         {
             ClickedCurrency = clickedCurrency;
@@ -83,7 +71,37 @@ namespace TravelPartner.ViewModel
         public void ReplaceCurrencyItem(Currency newCurrency)
         {
             ChoosenCurrencies.RemoveAt(newCurrency.Position);
-            ChoosenCurrencies.Insert(newCurrency.Position, newCurrency);
+            ChoosenCurrencies.Insert(newCurrency.Position, new CurrencyListItemViewModel(newCurrency));
+        }
+
+        public void EntryFocused(Entry sender, FocusEventArgs e)
+        {
+            if (focusedEntry == null)
+            {
+                focusedEntry = sender;
+                focusedEntry.TextChanged += TextChangedHandler;
+            }
+            else if (focusedEntry == sender)
+                return;
+            else
+            {
+                focusedEntry.TextChanged -= TextChangedHandler;
+                focusedEntry = sender;
+                focusedEntry.TextChanged += TextChangedHandler;
+            }
+        }
+
+        private void TextChangedHandler(object sender, TextChangedEventArgs args)
+        {
+            var ent = (Entry)sender;
+            //(Currency) ent.BindingContext;
+            double input = String.IsNullOrEmpty(args.NewTextValue) ? 0 : Convert.ToDouble(args.NewTextValue);
+            ConvertCurrencyValues();
+        }
+
+        private void ConvertCurrencyValues()
+        {
+
         }
     }
 }

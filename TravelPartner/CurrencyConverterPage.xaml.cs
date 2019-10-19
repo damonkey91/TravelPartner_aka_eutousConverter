@@ -19,5 +19,10 @@ namespace TravelPartner
             InitializeComponent();
             BindingContext = viewModel;
         }
+
+        private void Entry_Focused(object sender, FocusEventArgs e)
+        {
+            viewModel.EntryFocused( (Entry)sender, e);
+        }
     }
 }

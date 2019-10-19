@@ -16,10 +16,8 @@ namespace TravelPartner.Model
         public int Id { get; set; }
         public string Name
         {
-            get => name; set
-            {
-                name = value.ToLower();
-            }
+            get => name;
+            set => name = value.ToLower();
         }
         public string ShortName { get; set; }
         public double Value { get; set; }

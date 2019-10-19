@@ -11,19 +11,15 @@ using Xamarin.Forms;
 
 namespace TravelPartner.ViewModel
 {
-    class PopupViewModel : INotifyPropertyChanged, ITappedCallback, ISearchBarCallback
+    class PopupViewModel : ViewModelBase, ITappedCallback, ISearchBarCallback
     {
         private ObservableCollection<Currency> currencies;
         private CurrencyConverterViewModel currencyViewModel;
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public ObservableCollection<Currency> Currencies
         {
-            get => currencies; set
-            {
-                currencies = value;               
-                OnPropertChanged("Currencies");
-            }
+            get => currencies;
+            set => SetProperty(ref currencies, value);
         }
 
         public SearchCommand SearchBarCommand { get; set; }
@@ -43,11 +39,6 @@ namespace TravelPartner.ViewModel
             List<Currency> allCurrencies = await Currency.GetAllCurrencies();
             Currencies = allCurrencies != null ? new ObservableCollection<Currency>(allCurrencies) : new ObservableCollection<Currency>();
             
-        }
-
-        private void OnPropertChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public void Tapped(Currency clickedCurrency)
