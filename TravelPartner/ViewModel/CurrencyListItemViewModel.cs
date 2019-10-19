@@ -7,17 +7,18 @@ namespace TravelPartner.ViewModel
 {
     public class CurrencyListItemViewModel : ViewModelBase
     {
-        private Currency currency;
+        public Currency Currency { get; }
+        public int Position { get => Currency.Position; set => Currency.Position = value; }
         public string Name
         {
-            get => currency.Name;  
+            get => Currency.Name;  
         }
-        public string ShortName { get => currency.ShortName; }
-        private string entryValue;
+        public string ShortName { get => Currency.ShortName; }
+        private string entryValue = "0";
         public string EntryValue { get => entryValue; set => SetProperty(ref entryValue, value); }
         public CurrencyListItemViewModel(Currency currency)
         {
-            this.currency = currency;
+            this.Currency = currency;
         }
     }
 }

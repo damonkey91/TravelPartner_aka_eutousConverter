@@ -11,7 +11,7 @@ using Xamarin.Forms;
 
 namespace TravelPartner.ViewModel
 {
-    class PopupViewModel : ViewModelBase, ITappedCallback, ISearchBarCallback
+    class PopupViewModel : ViewModelBase, ISearchBarCallback
     {
         private ObservableCollection<Currency> currencies;
         private CurrencyConverterViewModel currencyViewModel;
@@ -24,13 +24,13 @@ namespace TravelPartner.ViewModel
 
         public SearchCommand SearchBarCommand { get; set; }
 
-        public TappCommand TappCommand { get; set; }
+        public Command TappCommand { get; set; }
 
         public PopupViewModel(CurrencyConverterViewModel currencyViewModel)
         {
             PopulateObservableCollections();
             SearchBarCommand = new SearchCommand(this);
-            TappCommand = new TappCommand(this);
+            TappCommand = new Command(Tapped);
             this.currencyViewModel = currencyViewModel;
         }
 
@@ -41,8 +41,9 @@ namespace TravelPartner.ViewModel
             
         }
 
-        public void Tapped(Currency clickedCurrency)
+        public void Tapped(object clickedObject)
         {
+            var clickedCurrency = (Currency)clickedObject;
             Currency oldCurrency = currencyViewModel.ClickedCurrency;
             List<Currency> list = SetPosition(oldCurrency, clickedCurrency);
             currencyViewModel.ReplaceCurrencyItem(list[0]);

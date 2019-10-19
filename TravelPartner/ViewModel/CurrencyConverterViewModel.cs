@@ -12,7 +12,7 @@ using Xamarin.Forms;
 
 namespace TravelPartner.ViewModel
 {
-    public class CurrencyConverterViewModel : ViewModelBase, ITappedCallback
+    public class CurrencyConverterViewModel : ViewModelBase
     {
         private ObservableCollection<CurrencyListItemViewModel> choosenCurrencies;
         public ObservableCollection<CurrencyListItemViewModel> ChoosenCurrencies
@@ -20,14 +20,14 @@ namespace TravelPartner.ViewModel
             get => choosenCurrencies;
             set => SetProperty(ref choosenCurrencies, value);
         }
-        public TappCommand TappCommand { get; set; }
+        public Command TappCommand { get; set; }
         private Entry focusedEntry = null;
 
         public Currency ClickedCurrency { get; private set; }
 
         public CurrencyConverterViewModel()
         {
-            TappCommand = new TappCommand(this);
+            TappCommand = new Command(Tapped);
             PopulateObservableCollections();
             UpdateExchangeRate();
         }
@@ -62,16 +62,18 @@ namespace TravelPartner.ViewModel
             return isMoreThen;
         }
 
-        public void Tapped(Currency clickedCurrency)
+        public void Tapped(object clickedObject)
         {
-            ClickedCurrency = clickedCurrency;
+            RemoveFocusedEntry();
+            var clickedItem = (CurrencyListItemViewModel)clickedObject;
+            ClickedCurrency = clickedItem.Currency;
             PopupNavigation.Instance.PushAsync(new MyPopupPage(this));
         }
 
         public void ReplaceCurrencyItem(Currency newCurrency)
         {
             ChoosenCurrencies.RemoveAt(newCurrency.Position);
-            ChoosenCurrencies.Insert(newCurrency.Position, new CurrencyListItemViewModel(newCurrency));
+            ChoosenCurrencies.Insert(newCurrency.Position, new CurrencyListItemViewModel( newCurrency));
         }
 
         public void EntryFocused(Entry sender, FocusEventArgs e)
@@ -93,15 +95,31 @@ namespace TravelPartner.ViewModel
 
         private void TextChangedHandler(object sender, TextChangedEventArgs args)
         {
-            var ent = (Entry)sender;
-            //(Currency) ent.BindingContext;
-            double input = String.IsNullOrEmpty(args.NewTextValue) ? 0 : Convert.ToDouble(args.NewTextValue);
-            ConvertCurrencyValues();
+            var entry = (Entry)sender;
+            var currencyItem = (CurrencyListItemViewModel) entry.BindingContext;
+            double input = string.IsNullOrEmpty(args.NewTextValue) ? 0 : Convert.ToDouble(args.NewTextValue);
+            ConvertCurrencyValues(input, currencyItem);
         }
 
-        private void ConvertCurrencyValues()
+        private void ConvertCurrencyValues(double value, CurrencyListItemViewModel focusedCurrencyItem)
         {
-
+            var valueInUSD = value * focusedCurrencyItem.Currency.Value;
+            foreach (var currencyItem in ChoosenCurrencies)
+            {
+                if (focusedCurrencyItem == currencyItem)
+                    continue;
+                var currencyRate = Convert.ToDouble(currencyItem.Currency.Value);
+                currencyItem.EntryValue = $"{currencyRate * valueInUSD}";
+            }
+        }
+        private void RemoveFocusedEntry()
+        {
+            if (focusedEntry != null)
+            {
+                focusedEntry.Unfocus();
+                focusedEntry.TextChanged -= TextChangedHandler;
+                focusedEntry = null;
+            }
         }
     }
 }
